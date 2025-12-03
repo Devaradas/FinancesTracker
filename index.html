@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forward Financial Planner</title>
+    <title>Split-Flow Financial Planner</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,14 +14,13 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
         .no-spinner::-webkit-inner-spin-button, 
         .no-spinner::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         .no-spinner { -moz-appearance: textfield; }
-        .pattern-bg { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
     </style>
 </head>
-<body class="pattern-bg">
+<body class="bg-slate-100">
 
     <div id="root"></div>
 
@@ -32,10 +31,11 @@
         const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
         const IconBriefcase = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
         const IconDollar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
-        const IconArrowRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
         const IconLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
         const IconRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
         const IconReset = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
+        const IconBolt = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>;
+        const IconCalendarCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M9 16l2 2 4-4"></path></svg>;
 
         // --- CONFIGURATION ---
         const CONFIG = {
@@ -53,32 +53,21 @@
         // --- GENERATOR LOGIC ---
         const generateFinancialMonth = (year, monthIndex) => {
             const days = [];
-            
-            // Work Cycle: 20th of current month -> 19th of next month
             let currentDate = new Date(year, monthIndex, 20);
             
-            // Generate ~35 days safely
             for (let i = 0; i < 40; i++) {
-                // Break if we hit the 20th of the next month
                 if (currentDate.getDate() === 20 && i > 0) break;
-
-                const dayOfWeek = currentDate.getDay(); // 0=Sun, 1=Mon...
+                const dayOfWeek = currentDate.getDay(); 
                 
                 let sami = 0;
                 let dilko = 0;
 
-                // --- NEW SCHEDULE LOGIC ---
                 // Sami: Mon(1), Tue(2), Wed(3)
-                if (dayOfWeek === 1 || dayOfWeek === 2 || dayOfWeek === 3) {
-                    sami = 1;
-                }
+                if (dayOfWeek === 1 || dayOfWeek === 2 || dayOfWeek === 3) sami = 1;
 
                 // Dilko: Sat(6)=20, Sun(0)=16
-                if (dayOfWeek === 6) {
-                    dilko = 20;
-                } else if (dayOfWeek === 0) {
-                    dilko = 16;
-                }
+                if (dayOfWeek === 6) dilko = 20;
+                else if (dayOfWeek === 0) dilko = 16;
 
                 days.push({
                     id: currentDate.toISOString().split('T')[0],
@@ -90,16 +79,13 @@
                     dilko,
                     natakallam: 0
                 });
-
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             return days;
         };
 
         const App = () => {
-            // --- STATE ---
             const today = new Date();
-            // Default to current work cycle. If today is Nov 5, we are in the "Oct 20 - Nov 19" cycle.
             const initialYear = today.getFullYear();
             const initialMonth = today.getDate() < 20 ? today.getMonth() - 1 : today.getMonth();
 
@@ -107,27 +93,19 @@
             const [viewMonth, setViewMonth] = useState(initialMonth);
             const [exchangeRate, setExchangeRate] = useState(37.5);
             
-            const storageKey = `fin_forward_${viewYear}_${viewMonth}`;
-
+            const storageKey = `fin_split_${viewYear}_${viewMonth}`;
             const [days, setDays] = useState([]);
 
-            // Load Data
             useEffect(() => {
                 const saved = localStorage.getItem(storageKey);
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
-                        const rehydrated = parsed.map(d => ({...d, dateObj: new Date(d.id)}));
-                        setDays(rehydrated);
-                    } catch(e) {
-                        setDays(generateFinancialMonth(viewYear, viewMonth));
-                    }
-                } else {
-                    setDays(generateFinancialMonth(viewYear, viewMonth));
-                }
+                        setDays(parsed.map(d => ({...d, dateObj: new Date(d.id)})));
+                    } catch(e) { setDays(generateFinancialMonth(viewYear, viewMonth)); }
+                } else { setDays(generateFinancialMonth(viewYear, viewMonth)); }
             }, [viewYear, viewMonth]);
 
-            // Save Data
             useEffect(() => {
                 if (days.length > 0) localStorage.setItem(storageKey, JSON.stringify(days));
             }, [days, storageKey]);
@@ -142,13 +120,19 @@
                 return acc;
             }, { sami: 0, dilko: 0, natakallam: 0 }), [days]);
 
-            const currentIncome = 
-                CONFIG.RATES.YTB + 
-                (totals.sami * CONFIG.RATES.SAMI) + 
-                (totals.dilko * CONFIG.RATES.DILKO) + 
-                (totals.natakallam * natakallamRate);
+            // Income Buckets
+            const incomeSami = totals.sami * CONFIG.RATES.SAMI;
+            const incomeNatakallam = totals.natakallam * natakallamRate;
+            const incomeDilko = totals.dilko * CONFIG.RATES.DILKO;
+            
+            // "Immediate" Cash (Available during this work period)
+            const incomeImmediate = incomeSami + incomeNatakallam + CONFIG.RATES.YTB;
+            
+            // "Deferred" Cash (Available next period)
+            const incomeDeferred = incomeDilko;
 
-            const gap = GOAL_TOTAL - currentIncome;
+            const totalValueGenerated = incomeImmediate + incomeDeferred;
+            const gap = GOAL_TOTAL - totalValueGenerated;
             const isGoalMet = gap <= 0;
 
             const neededSami = isGoalMet ? 0 : Math.ceil(gap / CONFIG.RATES.SAMI);
@@ -171,161 +155,143 @@
             };
 
             const resetToDefaults = () => {
-                if(confirm("Reset all numbers to ideal schedule?")) {
-                    setDays(generateFinancialMonth(viewYear, viewMonth));
-                }
+                if(confirm("Reset all numbers to default schedule?")) setDays(generateFinancialMonth(viewYear, viewMonth));
             };
 
-            // --- DATE LABELS (THE TRICKY PART) ---
+            // --- LABELS ---
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            
-            // 1. Earning Period (The Calendar you see)
             const nextMonthIdx = viewMonth === 11 ? 0 : viewMonth + 1;
-            const nextYear = viewMonth === 11 ? viewYear + 1 : viewYear;
-            const earningLabel = `${months[viewMonth]} 20 - ${months[nextMonthIdx]} 19`;
-
-            // 2. Spending Period (The Future Month this pays for)
-            const fundStartMonthIdx = nextMonthIdx;
-            const fundEndMonthIdx = fundStartMonthIdx === 11 ? 0 : fundStartMonthIdx + 1;
-            const fundingLabel = `${months[fundStartMonthIdx]} 20 - ${months[fundEndMonthIdx]} 19`;
+            const periodLabel = `${months[viewMonth]} 20 - ${months[nextMonthIdx]} 19`;
             
-            // Calendar Grid Setup
+            // Next Month Name for Dilko Label
+            const payoutMonthName = months[nextMonthIdx];
+
             const startDayOfWeek = days.length > 0 ? (days[0].dayOfWeek === 0 ? 6 : days[0].dayOfWeek - 1) : 0; 
             const blanks = Array(startDayOfWeek).fill(null);
 
             return (
                 <div className="min-h-screen pb-20">
                     
-                    {/* TOP STATUS BAR */}
-                    <div className="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+                    {/* STATUS HEADER */}
+                    <div className="bg-white border-b shadow-sm sticky top-0 z-30">
                         <div className="max-w-7xl mx-auto px-4 py-4">
                             
-                            {/* Header & Controls */}
+                            {/* Controls Row */}
                             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                                 <div>
-                                    <div className="flex items-center gap-2 text-blue-300 text-xs font-bold uppercase tracking-widest mb-1">
-                                        Planning Strategy
-                                    </div>
-                                    <h1 className="text-2xl font-bold flex items-center gap-3">
-                                        Funding Next Month
-                                        <span className="text-xs font-normal bg-slate-700 px-2 py-1 rounded text-slate-300 border border-slate-600">Goal: {GOAL_TOTAL.toLocaleString()} TL</span>
+                                    <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                        Income Productivity
+                                        <span className="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded border font-normal">Goal: {GOAL_TOTAL.toLocaleString()} TL</span>
                                     </h1>
                                 </div>
-
                                 <div className="flex items-center gap-4 text-sm">
-                                    <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+                                    <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border">
                                         <span className="text-slate-400">1 USD =</span>
-                                        <input 
-                                            type="number" 
-                                            value={exchangeRate} 
-                                            onChange={e => setExchangeRate(e.target.value)} 
-                                            className="w-12 bg-transparent font-bold text-white outline-none text-right"
-                                        />
+                                        <input type="number" value={exchangeRate} onChange={e => setExchangeRate(e.target.value)} className="w-12 bg-transparent font-bold text-slate-700 outline-none text-right" />
                                         <span className="text-slate-400">TL</span>
                                     </div>
-                                    <button onClick={resetToDefaults} className="text-xs flex items-center gap-1 text-red-300 hover:text-white font-medium px-3 py-1.5 border border-red-900/50 bg-red-900/20 rounded-lg hover:bg-red-900/40 transition">
-                                        <IconReset /> Reset Default
+                                    <button onClick={resetToDefaults} className="text-red-400 hover:text-red-600 font-medium text-xs px-3 py-1 border border-red-100 rounded-full hover:bg-red-50">
+                                        <IconReset /> Defaults
                                     </button>
                                 </div>
                             </div>
 
-                            {/* MAIN STATUS CARDS */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {/* MAIN DASHBOARD GRID */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 
-                                {/* CARD 1: TOTAL FORECAST */}
-                                <div className={`p-4 rounded-xl border-l-4 flex flex-col justify-between ${isGoalMet ? 'bg-emerald-900/30 border-emerald-500' : 'bg-slate-800 border-slate-600'}`}>
-                                    <div className="text-xs text-slate-400 uppercase font-bold">Total Forecast</div>
-                                    <div className="mt-1">
-                                        <div className={`text-3xl font-bold ${isGoalMet ? 'text-emerald-400' : 'text-white'}`}>
-                                            {currentIncome.toLocaleString()}
+                                {/* 1. TOTAL VALUE (The Goal Tracker) */}
+                                <div className={`p-4 rounded-xl border-l-4 shadow-sm flex flex-col justify-between ${isGoalMet ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-blue-500'}`}>
+                                    <div className="flex justify-between items-start">
+                                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Total Value Created</div>
+                                        <div className={`text-xs font-bold px-2 py-1 rounded ${isGoalMet ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                                            {isGoalMet ? 'GOAL HIT' : 'IN PROGRESS'}
                                         </div>
-                                        <div className="text-xs text-slate-400 mt-1 flex justify-between">
-                                            <span>Current Gap:</span>
-                                            <span className={isGoalMet ? 'text-emerald-400' : 'text-red-400'}>{isGoalMet ? 'Safe (+)' : `-${gap.toLocaleString()}`}</span>
+                                    </div>
+                                    <div className="mt-2">
+                                        <div className={`text-3xl font-bold ${isGoalMet ? 'text-emerald-700' : 'text-slate-800'}`}>
+                                            {totalValueGenerated.toLocaleString()} <span className="text-sm font-normal text-slate-400">TL</span>
+                                        </div>
+                                        <div className="w-full bg-slate-200 h-1.5 mt-3 rounded-full overflow-hidden">
+                                            <div className={`h-full transition-all duration-500 ${isGoalMet ? 'bg-emerald-500' : 'bg-blue-600'}`} style={{width: `${Math.min((totalValueGenerated/GOAL_TOTAL)*100, 100)}%`}}></div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* CARD 2: SAMI GAP */}
-                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-between">
-                                    <div>
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold mb-1">Use Sami</div>
-                                        <div className={`text-2xl font-bold ${isGoalMet ? 'text-slate-600' : 'text-blue-400'}`}>
-                                            {neededSami} <span className="text-sm text-slate-500 font-normal">hrs</span>
+                                {/* 2. CASH FLOW BREAKDOWN (The Split) */}
+                                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    
+                                    {/* IMMEDIATE BUCKET */}
+                                    <div className="bg-yellow-50/50 border border-yellow-100 rounded-xl p-3 flex flex-col justify-between">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <IconBolt/>
+                                            <span className="text-xs font-bold text-yellow-700 uppercase">Immediate Cash</span>
+                                        </div>
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <div className="text-2xl font-bold text-slate-700">{incomeImmediate.toLocaleString()}</div>
+                                                <div className="text-[10px] text-slate-400">Sami + Natakallam + YTB</div>
+                                            </div>
+                                            <div className="text-right text-[10px] text-slate-400">
+                                                Funds {periodLabel}
+                                            </div>
                                         </div>
                                     </div>
-                                    <IconUser/>
-                                </div>
 
-                                {/* CARD 3: DILKO GAP */}
-                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-between">
-                                    <div>
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold mb-1">OR Dilko</div>
-                                        <div className={`text-2xl font-bold ${isGoalMet ? 'text-slate-600' : 'text-orange-400'}`}>
-                                            {neededDilko} <span className="text-sm text-slate-500 font-normal">sess</span>
+                                    {/* DEFERRED BUCKET */}
+                                    <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 flex flex-col justify-between">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <IconCalendarCheck/>
+                                            <span className="text-xs font-bold text-indigo-700 uppercase">Deferred (Next Month)</span>
+                                        </div>
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <div className="text-2xl font-bold text-slate-700">{incomeDeferred.toLocaleString()}</div>
+                                                <div className="text-[10px] text-slate-400">Dilko Only</div>
+                                            </div>
+                                            <div className="text-right text-[10px] text-slate-400">
+                                                Funds {payoutMonthName} 20 - ...
+                                            </div>
                                         </div>
                                     </div>
-                                    <IconBriefcase/>
-                                </div>
 
-                                {/* CARD 4: NATAKALLAM GAP */}
-                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-between">
-                                    <div>
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold mb-1">OR Natakallam</div>
-                                        <div className={`text-2xl font-bold ${isGoalMet ? 'text-slate-600' : 'text-purple-400'}`}>
-                                            {neededNatakallam} <span className="text-sm text-slate-500 font-normal">sess</span>
-                                        </div>
-                                    </div>
-                                    <IconDollar/>
                                 </div>
-
                             </div>
+
+                            {/* 3. GAP SOLVERS */}
+                            {!isGoalMet && (
+                                <div className="mt-4 pt-4 border-t flex gap-4 overflow-x-auto pb-2">
+                                    <div className="whitespace-nowrap text-xs font-bold text-slate-400 uppercase py-2">To Hit Goal:</div>
+                                    <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 text-blue-700 text-sm font-medium">
+                                        <IconUser/> +{neededSami} hrs Sami
+                                    </div>
+                                    <div className="text-slate-300 font-bold">OR</div>
+                                    <div className="flex items-center gap-2 bg-orange-50 px-3 py-1 rounded-lg border border-orange-100 text-orange-700 text-sm font-medium">
+                                        <IconBriefcase/> +{neededDilko} sess Dilko
+                                    </div>
+                                    <div className="text-slate-300 font-bold">OR</div>
+                                    <div className="flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-lg border border-purple-100 text-purple-700 text-sm font-medium">
+                                        <IconDollar/> +{neededNatakallam} sess Natakallam
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* PERIOD NAVIGATOR & EXPLANATION */}
+                    {/* CALENDAR AREA */}
                     <div className="max-w-7xl mx-auto px-4 mt-8">
-                        
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border mb-8">
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                                {/* Left: Navigation */}
-                                <div className="flex items-center gap-4 bg-slate-100 p-2 rounded-full">
-                                    <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-white hover:shadow rounded-full transition text-slate-600"><IconLeft/></button>
-                                    <div className="text-center px-4">
-                                        <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Work Period</div>
-                                        <div className="text-lg font-bold text-slate-800">{earningLabel}</div>
-                                    </div>
-                                    <button onClick={() => changeMonth(1)} className="p-2 hover:bg-white hover:shadow rounded-full transition text-slate-600"><IconRight/></button>
-                                </div>
-
-                                {/* Center: Arrow */}
-                                <div className="hidden md:flex text-slate-300">
-                                    <svg width="40" height="24" viewBox="0 0 40 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="0" y1="12" x2="35" y2="12"/><polyline points="29 6 35 12 29 18"/></svg>
-                                </div>
-
-                                {/* Right: Result */}
-                                <div className="flex-1 w-full bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-center gap-4">
-                                    <div className="bg-indigo-100 p-3 rounded-lg text-indigo-600 font-bold text-xl">
-                                        PAY
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-indigo-400 font-bold uppercase tracking-wider">Funds Living Costs For:</div>
-                                        <div className="text-xl font-bold text-indigo-900">{fundingLabel}</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="flex items-center justify-between mb-4 bg-white p-3 rounded-xl shadow-sm border">
+                            <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-100 rounded-full text-slate-500"><IconLeft/></button>
+                            <h2 className="text-lg font-bold text-slate-700">Work Period: <span className="text-slate-900">{periodLabel}</span></h2>
+                            <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-100 rounded-full text-slate-500"><IconRight/></button>
                         </div>
 
-                        {/* CALENDAR GRID */}
                         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                            {/* Header Row */}
                             <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
                                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
                                     <div key={d} className="py-3 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">{d}</div>
                                 ))}
                             </div>
 
-                            {/* Days Grid */}
                             <div className="grid grid-cols-7 bg-slate-100 gap-px border-b border-slate-200">
                                 {blanks.map((_, i) => <div key={`blank-${i}`} className="bg-slate-50/50 min-h-[140px]"></div>)}
                                 
@@ -336,8 +302,6 @@
                                     
                                     return (
                                         <div key={day.id} className={`bg-white min-h-[140px] p-2 flex flex-col group relative transition-colors ${isToday ? 'bg-blue-50/40' : 'hover:bg-slate-50'}`}>
-                                            
-                                            {/* Date Header */}
                                             <div className="flex justify-between items-center mb-3">
                                                 <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-blue-600 text-white' : (isWeekend ? 'text-red-400' : 'text-slate-700')}`}>
                                                     {day.dayNum}
@@ -345,68 +309,36 @@
                                                 {day.dayNum === 1 && <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-1 rounded">{day.monthName}</span>}
                                             </div>
 
-                                            {/* Input Stack */}
                                             <div className="space-y-2 flex-1">
-                                                
-                                                {/* Sami */}
                                                 <div className="flex items-center group/input">
                                                     <div className={`w-1 h-6 rounded-full mr-2 transition-colors ${day.sami > 0 ? 'bg-blue-500' : 'bg-slate-200 group-hover/input:bg-blue-300'}`}></div>
                                                     <div className="flex-1">
-                                                        <div className="text-[9px] text-slate-400 uppercase leading-none mb-0.5">Sami (hr)</div>
-                                                        <input 
-                                                            type="number" 
-                                                            value={day.sami || ''}
-                                                            onChange={(e) => updateDay(day.id, 'sami', e.target.value)}
-                                                            placeholder="-"
-                                                            className="w-full text-sm font-bold font-mono text-slate-700 placeholder-slate-200 outline-none bg-transparent"
-                                                        />
+                                                        <div className="text-[9px] text-slate-400 uppercase leading-none mb-0.5">Sami</div>
+                                                        <input type="number" value={day.sami || ''} onChange={(e) => updateDay(day.id, 'sami', e.target.value)} placeholder="-" className="w-full text-sm font-bold font-mono text-slate-700 placeholder-slate-200 outline-none bg-transparent" />
                                                     </div>
                                                 </div>
-
-                                                {/* Dilko */}
                                                 <div className="flex items-center group/input">
                                                     <div className={`w-1 h-6 rounded-full mr-2 transition-colors ${day.dilko > 0 ? 'bg-orange-500' : 'bg-slate-200 group-hover/input:bg-orange-300'}`}></div>
                                                     <div className="flex-1">
                                                         <div className="text-[9px] text-slate-400 uppercase leading-none mb-0.5">Dilko</div>
-                                                        <input 
-                                                            type="number" 
-                                                            value={day.dilko || ''}
-                                                            onChange={(e) => updateDay(day.id, 'dilko', e.target.value)}
-                                                            placeholder="-"
-                                                            className="w-full text-sm font-bold font-mono text-slate-700 placeholder-slate-200 outline-none bg-transparent"
-                                                        />
+                                                        <input type="number" value={day.dilko || ''} onChange={(e) => updateDay(day.id, 'dilko', e.target.value)} placeholder="-" className="w-full text-sm font-bold font-mono text-slate-700 placeholder-slate-200 outline-none bg-transparent" />
                                                     </div>
                                                 </div>
-
-                                                {/* Natakallam */}
                                                 <div className="flex items-center group/input">
                                                     <div className={`w-1 h-6 rounded-full mr-2 transition-colors ${day.natakallam > 0 ? 'bg-purple-500' : 'bg-slate-200 group-hover/input:bg-purple-300'}`}></div>
                                                     <div className="flex-1">
                                                         <div className="text-[9px] text-slate-400 uppercase leading-none mb-0.5">Natakallam</div>
-                                                        <input 
-                                                            type="number" 
-                                                            value={day.natakallam || ''}
-                                                            onChange={(e) => updateDay(day.id, 'natakallam', e.target.value)}
-                                                            placeholder="-"
-                                                            className="w-full text-sm font-bold font-mono text-slate-700 placeholder-slate-200 outline-none bg-transparent"
-                                                        />
+                                                        <input type="number" value={day.natakallam || ''} onChange={(e) => updateDay(day.id, 'natakallam', e.target.value)} placeholder="-" className="w-full text-sm font-bold font-mono text-slate-700 placeholder-slate-200 outline-none bg-transparent" />
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            {/* Daily Total */}
-                                            {dailyTotal > 0 && (
-                                                <div className="absolute top-2 right-2 text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
-                                                    {dailyTotal.toLocaleString()}
-                                                </div>
-                                            )}
+                                            {dailyTotal > 0 && <div className="absolute top-2 right-2 text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">{dailyTotal.toLocaleString()}</div>}
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
 
-                        {/* Legend */}
                         <div className="mt-8 mb-12 flex justify-center gap-8 text-xs font-bold text-slate-500">
                             <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-500 rounded"></div> Sami (1200 TL)</div>
                             <div className="flex items-center gap-2"><div className="w-3 h-3 bg-orange-500 rounded"></div> Dilko (350 TL)</div>

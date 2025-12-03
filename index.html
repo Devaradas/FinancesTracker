@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Strategy Dashboard</title>
+    
+    <!-- Tailwind CSS (Styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM (The Engine) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (Translates React code for the browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="root"></div>
+
+    <!-- YOUR REACT CODE STARTS HERE -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- ICONS (Simple SVGs to replace Lucide) ---
+        const IconUser = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-200"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        );
+        const IconBriefcase = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orange-200"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        );
+        const IconDollar = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-200"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        );
+        const IconCalendar = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        );
+        const IconRefresh = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        );
+
+        // --- CONFIGURATION ---
+        const RENT = 19500;
+        const GOAL_MULTIPLIER = 3;
+        const GOAL_TOTAL = RENT * GOAL_MULTIPLIER; // 58,500 TL
+
+        const RATES = {
+            SAMI: 1200,      // TL per hour
+            DILKO: 350,      // TL per session
+            YTB: 4500        // Fixed Monthly
+        };
+
+        // Generates a mock month
+        const generateMonthData = () => {
+            const days = [];
+            for (let i = 1; i <= 30; i++) {
+                const dayOfWeek = i % 7; // 1=Mon, 0=Sun
+                let sami = 0;
+                let dilko = 0;
+                
+                // Default: Sami Mon, Wed, Fri
+                if (dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5) sami = 1;
+
+                // Default: Dilko Mon-Sat (roughly 32/week)
+                if (dayOfWeek !== 0) { 
+                    dilko = 5;
+                    if (dayOfWeek % 2 === 0) dilko = 6;
+                }
+
+                days.push({ id: i, day: i, sami: sami, dilko: dilko, natakallam: 0 });
+            }
+            return days;
+        };
+
+        const Dashboard = () => {
+            const [schedule, setSchedule] = useState(generateMonthData());
+            const [exchangeRate, setExchangeRate] = useState(37.5);
+            
+            const natakallamRate = 12 * exchangeRate; 
+
+            // Calculate totals
+            const totals = schedule.reduce((acc, day) => {
+                acc.sami += day.sami;
+                acc.dilko += day.dilko;
+                acc.natakallam += day.natakallam;
+                return acc;
+            }, { sami: 0, dilko: 0, natakallam: 0 });
+
+            const currentIncome = 
+                RATES.YTB + 
+                (totals.sami * RATES.SAMI) + 
+                (totals.dilko * RATES.DILKO) + 
+                (totals.natakallam * natakallamRate);
+
+            const gap = GOAL_TOTAL - currentIncome;
+            const isGoalMet = gap <= 0;
+
+            const neededSami = isGoalMet ? 0 : Math.ceil(gap / RATES.SAMI);
+            const neededDilko = isGoalMet ? 0 : Math.ceil(gap / RATES.DILKO);
+            const neededNatakallam = isGoalMet ? 0 : Math.ceil(gap / natakallamRate);
+
+            const updateDay = (id, field, value) => {
+                const newSchedule = schedule.map(day => {
+                    if (day.id === id) {
+                        return { ...day, [field]: Math.max(0, parseInt(value) || 0) };
+                    }
+                    return day;
+                });
+                setSchedule(newSchedule);
+            };
+
+            const resetDefaults = () => {
+                if(confirm("Reset calendar to default ideal schedule?")) {
+                    setSchedule(generateMonthData());
+                }
+            };
+
+            return (
+                <div className="p-6 max-w-4xl mx-auto min-h-screen font-sans">
+                    
+                    {/* HEADER */}
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">Income Strategy</h1>
+                            <p className="text-gray-500">Goal: 3x Rent ({GOAL_TOTAL.toLocaleString()} TL)</p>
+                        </div>
+                        <div className="flex items-center gap-2 bg-white p-2 rounded shadow-sm border">
+                            <span className="text-sm text-gray-500">USD/TL:</span>
+                            <input 
+                                type="number" 
+                                value={exchangeRate}
+                                onChange={(e) => setExchangeRate(e.target.value)}
+                                className="w-16 border rounded p-1 text-right font-mono"
+                            />
+                        </div>
+                    </div>
+
+                    {/* SQUARES */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div className={`p-6 rounded-xl shadow-md border-l-4 transition-all ${isGoalMet ? 'bg-green-50 border-green-500' : 'bg-white border-blue-500'}`}>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-500 uppercase">Solve with Sami</p>
+                                    <h2 className="text-4xl font-bold mt-2 text-blue-600">{isGoalMet ? "DONE" : `${neededSami} hrs`}</h2>
+                                </div>
+                                <IconUser />
+                            </div>
+                            {!isGoalMet && <p className="text-xs text-gray-400 mt-2">@ 1200 TL/hr</p>}
+                        </div>
+
+                        <div className={`p-6 rounded-xl shadow-md border-l-4 transition-all ${isGoalMet ? 'bg-green-50 border-green-500' : 'bg-white border-orange-500'}`}>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-500 uppercase">OR Dilko Sessions</p>
+                                    <h2 className="text-4xl font-bold mt-2 text-orange-600">{isGoalMet ? "DONE" : `${neededDilko}`}</h2>
+                                </div>
+                                <IconBriefcase />
+                            </div>
+                            {!isGoalMet && <p className="text-xs text-gray-400 mt-2">@ 350 TL/session</p>}
+                        </div>
+
+                        <div className={`p-6 rounded-xl shadow-md border-l-4 transition-all ${isGoalMet ? 'bg-green-50 border-green-500' : 'bg-white border-purple-500'}`}>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-500 uppercase">OR Natakallam</p>
+                                    <h2 className="text-4xl font-bold mt-2 text-purple-600">{isGoalMet ? "DONE" : `${neededNatakallam}`}</h2>
+                                </div>
+                                <IconDollar />
+                            </div>
+                            {!isGoalMet && <p className="text-xs text-gray-400 mt-2">@ ~{Math.round(natakallamRate)} TL/session</p>}
+                        </div>
+                    </div>
+
+                    {/* PROGRESS BAR */}
+                    <div className="bg-white p-4 rounded-lg shadow-sm border mb-8">
+                        <div className="flex justify-between text-sm font-medium mb-2">
+                            <span>Current Forecast: {currentIncome.toLocaleString()} TL</span>
+                            <span className={isGoalMet ? "text-green-600" : "text-red-500"}>
+                                {isGoalMet ? `+ ${(currentIncome - GOAL_TOTAL).toLocaleString()} Surplus` : `- ${gap.toLocaleString()} Gap`}
+                            </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-4">
+                            <div 
+                                className={`h-4 rounded-full transition-all duration-500 ${isGoalMet ? "bg-green-500" : "bg-blue-600"}`}
+                                style={{ width: `${Math.min((currentIncome / GOAL_TOTAL) * 100, 100)}%` }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    {/* CALENDAR */}
+                    <div className="bg-white rounded-xl shadow-lg border overflow-hidden">
+                        <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
+                            <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                                <IconCalendar /> Monthly Planner
+                            </h3>
+                            <button onClick={resetDefaults} className="text-xs flex items-center gap-1 bg-white hover:bg-gray-50 border px-3 py-1 rounded text-gray-600 transition">
+                                <IconRefresh /> Reset
+                            </button>
+                        </div>
+                        
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+                                    <tr>
+                                        <th className="px-4 py-3">Day</th>
+                                        <th className="px-4 py-3 text-blue-600">Sami (Hrs)</th>
+                                        <th className="px-4 py-3 text-orange-600">Dilko (Sess)</th>
+                                        <th className="px-4 py-3 text-purple-600">Natakallam</th>
+                                        <th className="px-4 py-3 text-gray-400 text-right">Daily Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {schedule.map((day) => {
+                                        const dailyTotal = 
+                                            (day.sami * RATES.SAMI) + 
+                                            (day.dilko * RATES.DILKO) + 
+                                            (day.natakallam * natakallamRate);
+                                        return (
+                                            <tr key={day.id} className="hover:bg-gray-50 transition">
+                                                <td className="px-4 py-2 font-medium text-gray-600">Day {day.day}</td>
+                                                <td className="px-4 py-1"><input type="number" value={day.sami} onChange={(e) => updateDay(day.id, 'sami', e.target.value)} className="w-16 border border-gray-200 rounded px-2 py-1 focus:ring-2 focus:ring-blue-200 outline-none font-mono" /></td>
+                                                <td className="px-4 py-1"><input type="number" value={day.dilko} onChange={(e) => updateDay(day.id, 'dilko', e.target.value)} className="w-16 border border-gray-200 rounded px-2 py-1 focus:ring-2 focus:ring-orange-200 outline-none font-mono" /></td>
+                                                <td className="px-4 py-1"><input type="number" value={day.natakallam} onChange={(e) => updateDay(day.id, 'natakallam', e.target.value)} className="w-16 border border-gray-200 rounded px-2 py-1 focus:ring-2 focus:ring-purple-200 outline-none font-mono" /></td>
+                                                <td className="px-4 py-2 text-right text-gray-500 font-mono">{dailyTotal > 0 ? dailyTotal.toLocaleString() : '-'}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Dashboard />);
+    </script>
+</body>
+</html>
